@@ -224,7 +224,7 @@ def prepare_dataset(
                 recording_dict[recording_id] = recording
             except Exception as e:
                 logging.warning(
-                    f"Error processing recording {recording_id} with error: {e}"
+                    f"Error processing recording with error: {e}"
                 )
 
         recording_set = RecordingSet.from_recordings(recording_dict.values())
