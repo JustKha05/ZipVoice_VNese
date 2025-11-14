@@ -67,9 +67,9 @@ def main():
         st.header("Cấu hình")
         model_name = st.selectbox(
             "Chọn model",
-            ["zipvoice", "zipvoice_distill"],
+            ["zipvoice"],
             index=0,
-            help="zipvoice_distill nhanh hơn nhưng chất lượng có thể giảm nhẹ.",
+            help="Chọn model muốn dùng",
         )
 
     # Input chính
