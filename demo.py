@@ -6,7 +6,9 @@ from pathlib import Path
 import streamlit as st
 
 
-def run_zipvoice(prompt_file, prompt_text, text_to_gen, model_name="zipvoice"):
+def run_zipvoice(prompt_file, prompt_text, text_to_gen,
+                 model_name="zipvoice",
+                 checkpoint_name="iter-525000-avg-2.pt"):
     """
     Gọi lệnh:
     python -m zipvoice.bin.infer_zipvoice ...
@@ -28,6 +30,14 @@ def run_zipvoice(prompt_file, prompt_text, text_to_gen, model_name="zipvoice"):
         model_name,
         "--prompt-wav",
         prompt_path,
+        # === thêm đúng như lệnh CLI bạn đưa ra ===
+        "--tokenizer",
+        "espeak",                 # <-- giống: --tokenizer espeak
+        "--lang",
+        "vi",                     # <-- giống: --lang vi
+        "--checkpoint-name",
+        checkpoint_name,          # <-- giống: --checkpoint-name iter-525000-avg-2.pt
+        # =========================================
         "--prompt-text",
         prompt_text,
         "--text",
@@ -39,7 +49,6 @@ def run_zipvoice(prompt_file, prompt_text, text_to_gen, model_name="zipvoice"):
     st.markdown("### 🔧 Lệnh đang chạy")
     st.code(" ".join(cmd))
 
-    # ❗ Không dùng check=True, và capture stdout/stderr
     result = subprocess.run(
         cmd,
         capture_output=True,
@@ -65,6 +74,7 @@ def run_zipvoice(prompt_file, prompt_text, text_to_gen, model_name="zipvoice"):
 
 
 
+
 def main():
     st.set_page_config(page_title="ZipVoice VNese demo", page_icon="🎙️")
     st.title("🎙️ ZipVoice VNese – Zero-shot TTS")
@@ -82,6 +92,12 @@ def main():
             index=0,
             help="Chọn model muốn dùng",
         )
+        checkpoint_name = st.text_input(
+            "Checkpoint name",
+            value="iter-525000-avg-2.pt",
+            help="Tên file checkpoint trong repo HF (vd: iter-525000-avg-2.pt)",
+        )
+
 
     # Input chính
     prompt_file = st.file_uploader(
@@ -114,6 +130,7 @@ def main():
                 prompt_text=prompt_text,
                 text_to_gen=text_to_gen,
                 model_name=model_name,
+                checkpoint_name=checkpoint_name,
             )
         
         if audio_bytes is None:
