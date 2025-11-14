@@ -19,3 +19,9 @@ jieba
 piper_phonemize
 pypinyin
 setuptools<81
+
+#demo
+streamlit
+torch
+torchaudio
+torchcodec
