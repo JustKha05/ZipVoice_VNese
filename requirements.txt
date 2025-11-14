@@ -25,3 +25,4 @@ streamlit
 torch
 torchaudio
 torchcodec
+ffmpeg
