@@ -9,15 +9,9 @@ import streamlit as st
 def run_zipvoice(prompt_file, prompt_text, text_to_gen, model_name="zipvoice"):
     """
     Gọi lệnh:
-    python -m zipvoice.bin.infer_zipvoice \
-        --model-name ... \
-        --prompt-wav ... \
-        --prompt-text ... \
-        --text ... \
-        --res-wav-path ...
-    rồi đọc file wav ra để phát trên web.
+    python -m zipvoice.bin.infer_zipvoice ...
+    và in ra log nếu có lỗi.
     """
-
     # Lưu file audio upload thành file tạm
     suffix = Path(prompt_file.name).suffix or ".wav"
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as f:
@@ -42,16 +36,33 @@ def run_zipvoice(prompt_file, prompt_text, text_to_gen, model_name="zipvoice"):
         str(out_path),
     ]
 
-    # Cho dễ debug nếu lỗi
-    st.text("🔧 Đang chạy lệnh:")
+    st.markdown("### 🔧 Lệnh đang chạy")
     st.code(" ".join(cmd))
 
-    # Chạy infer
-    subprocess.run(cmd, check=True)
+    # ❗ Không dùng check=True, và capture stdout/stderr
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+    )
 
-    # Đọc lại file audio vừa sinh ra
+    st.markdown("### 📤 STDOUT (output của script)")
+    st.code(result.stdout or "(trống)")
+
+    st.markdown("### 📕 STDERR (lỗi chi tiết, nếu có)")
+    st.code(result.stderr or "(trống)")
+
+    if result.returncode != 0:
+        st.error(f"Lệnh infer bị lỗi (exit code = {result.returncode}). Xem STDERR ở trên.")
+        return None
+
+    if not out_path.exists():
+        st.error("Không tìm thấy file kết quả result_streamlit.wav.")
+        return None
+
     audio_bytes = out_path.read_bytes()
     return audio_bytes
+
 
 
 def main():
@@ -104,6 +115,9 @@ def main():
                 text_to_gen=text_to_gen,
                 model_name=model_name,
             )
+        
+        if audio_bytes is None:
+            return
 
         st.success("✅ Đã generate xong!")
         st.audio(audio_bytes, format="audio/wav")
