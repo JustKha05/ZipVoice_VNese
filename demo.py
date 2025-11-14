@@ -79,7 +79,7 @@ def main():
     st.set_page_config(page_title="ZipVoice VNese demo", page_icon="🎙️")
     st.title("🎙️ ZipVoice VNese – Zero-shot TTS")
     st.write(
-        "Upload **prompt audio** + nhập **prompt text** và **text cần đọc** "
+        "Upload **prompt audio** hoặc **ghi âm trực tiếp** + nhập **prompt text** và **text cần đọc** "
         "→ ZipVoice sẽ sinh ra file audio mới."
     )
 
@@ -98,12 +98,35 @@ def main():
             help="Tên file checkpoint trong repo HF (vd: iter-525000-avg-2.pt)",
         )
 
-
-    # Input chính
-    prompt_file = st.file_uploader(
-        "Prompt audio (giọng mẫu) – nên dùng .wav", type=["wav", "flac", "mp3"]
+    # === CHỌN NGUỒN PROMPT AUDIO ===
+    input_mode = st.radio(
+        "Chọn cách lấy prompt audio:",
+        ("🗂 Upload file .wav", "🎤 Ghi âm từ micro"),
+        horizontal=True,
     )
 
+    prompt_file = None
+
+    if input_mode == "🗂 Upload file .wav":
+        upload = st.file_uploader(
+            "Prompt audio (giọng mẫu) – nên dùng .wav", type=["wav"]
+        )
+        if upload is not None:
+            st.audio(upload, format="audio/wav")
+            prompt_file = upload
+    else:
+        # Nếu Streamlit mới: dùng st.audio_input
+        audio = st.audio_input(
+            "Ghi âm giọng mẫu từ micro (nhấn nút để ghi, nhấn lại để dừng)",
+            sample_rate=16000,
+        )
+        # Nếu bạn đang ở bản cũ (<1.39), đổi dòng trên thành:
+        # audio = st.experimental_audio_input("Ghi âm giọng mẫu từ micro (nhấn nút để ghi, nhấn lại để dừng)")
+        if audio is not None:
+            st.audio(audio, format="audio/wav")
+            prompt_file = audio
+
+    # Prompt text & text cần đọc
     prompt_text = st.text_area(
         "Prompt text (nội dung của file prompt audio)",
         value="Xin chào, tôi là giọng nói mẫu.",
@@ -118,7 +141,7 @@ def main():
 
     if st.button("🚀 Generate audio"):
         if prompt_file is None:
-            st.error("Bạn cần upload **prompt audio** trước.")
+            st.error("Bạn cần upload **prompt audio** hoặc **ghi âm từ micro** trước.")
             return
         if not text_to_gen.strip():
             st.error("Text muốn generate đang trống.")
@@ -132,12 +155,13 @@ def main():
                 model_name=model_name,
                 checkpoint_name=checkpoint_name,
             )
-        
+
         if audio_bytes is None:
             return
 
         st.success("✅ Đã generate xong!")
         st.audio(audio_bytes, format="audio/wav")
+
 
 
 if __name__ == "__main__":
