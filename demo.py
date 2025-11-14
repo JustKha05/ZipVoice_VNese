@@ -32,11 +32,11 @@ def run_zipvoice(prompt_file, prompt_text, text_to_gen,
         prompt_path,
         # === thêm đúng như lệnh CLI bạn đưa ra ===
         "--tokenizer",
-        "espeak",                 # <-- giống: --tokenizer espeak
+        "espeak",              
         "--lang",
-        "vi",                     # <-- giống: --lang vi
+        "vi",                     
         "--checkpoint-name",
-        checkpoint_name,          # <-- giống: --checkpoint-name iter-525000-avg-2.pt
+        checkpoint_name,          
         # =========================================
         "--prompt-text",
         prompt_text,
